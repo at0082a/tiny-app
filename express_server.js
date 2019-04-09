@@ -21,8 +21,6 @@ function generateRandomString() {
   
     return text;
   }
-
-console.log(generateRandomString());
   
 
 app.get("/", (req, res) => {
@@ -40,7 +38,6 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:shortURL", (req, res) => {
     let templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]};
-    console.log(templateVars)
     res.render("urls_show", templateVars);
 });
 
@@ -53,9 +50,19 @@ app.get("/hello", (req, res) => {
 }); 
 
 app.post("/urls", (req, res) => {
-    console.log(req.body);  // Log the POST request body to the console
-    res.send("Ok");         // Respond with 'Ok' (we will replace this)
-  });
+    let newId = generateRandomString()
+    let longURL = req.body.longURL
+    //let templateVars = { newId : longURL};  // Log the POST request body to the console
+    urlDatabase[newId] = longURL
+    console.log(urlDatabase)
+    // console.log(urlDatabase)
+    // console.log(templateVars)
+    // console.log(urlDatabase);
+
+    res.redirect("/urls/" + newId);         // Respond with 'Ok' (we will replace this)
+});
+
+
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
