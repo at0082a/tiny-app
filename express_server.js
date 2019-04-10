@@ -73,7 +73,12 @@ app.post("/urls", (req, res) => {
 app.post("/login", (req, res) => {
     res.cookie('username', req.body.username); // grabs the username from the input in form of header partial.
     res.redirect("/urls");         // Respond with 'Ok' (we will replace this)
-  });
+});
+
+app.post("/logout", (req, res) => {  
+  res.clearCookie('username'); 
+  res.redirect("/urls");         // Respond with 'Ok' (we will replace this)
+});
   
 app.post("/urls/:shortURL/delete", (req, res) => {
     delete urlDatabase[req.params.shortURL]
@@ -84,7 +89,6 @@ app.post("/urls/:shortURL", (req, res) => {
     let shortURL = req.params.shortURL // grabs shorturl from URL in browser (denoted by the :)
     let longURL = req.body.newURL //grabs the long url from the input field in urls show ejs
     urlDatabase[shortURL] = longURL
-    console.log(urlDatabase)
 res.redirect("/urls/") 
 });
 

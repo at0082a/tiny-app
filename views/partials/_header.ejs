@@ -1,12 +1,15 @@
 <h1> My Tiny App </h1>
 
 <% if (!username) { %>
-<form class="form-inline" method="POST" action="/login"> 
-    <input class="form-control" type="text" name="username" placeholder="Enter Username" style="width: 300px; margin: 1em">
-    <button type="submit" class="btn btn-primary"> Sign In </button>
-    <% } else { %>
-        <button type="submit" class="btn btn-primary"> Sign Out </button>
-        <p> You are signed in as <%= username %> </p>
-    <% } %>
+<form class="form-inline" method="POST" action="/login">    
+        <input class="form-control" type="text" name="username" placeholder="Enter Username" style="width: 300px; margin: 1em">
+        <button type="submit" class="btn btn-primary"> Sign In </button>
 </form>
+    <% } else { %>
+    <form method="POST" action="/logout">
+        <button type="submit" name="clearUser" class="btn btn-primary"> Sign Out </button>
+        <p> You are signed in as <%= username %> </p>
+    </form>
+    <% } %>
+<!-- </form> -->
 
