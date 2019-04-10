@@ -42,7 +42,7 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
-    const longURL = urlDatabase[req.params.shortURL] //grabs the longURL from database
+    const longURL = urlDatabase[req.params.shortURL] //grabs the longURL from database. "shortURL" in params comes from the "shortURL" in the browser link.
     res.redirect(longURL);
   });
 
@@ -56,15 +56,23 @@ app.get("/hello", (req, res) => {
 
 app.post("/urls", (req, res) => {
     let newId = generateRandomString()
-    let longURL = req.body.longURL
-    //let templateVars = { newId : longURL};  // Log the POST request body to the console
+    let longURL = req.body.longURL //longURL comes from the "name" of the input field in the urls index ejs page
+    
     urlDatabase[newId] = longURL // adds new entry into the database with key (shortURL) and value (longURL)
-    res.redirect("/urls/" + newId);         // Respond with 'Ok' (we will replace this)
+    res.redirect("/urls/" + newId)
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
-delete urlDatabase[req.params.shortURL]
+    delete urlDatabase[req.params.shortURL]
 res.redirect("/urls")    
+});
+
+app.post("/urls/:shortURL", (req, res) => {
+    let shortURL = req.params.shortURL // grabs shorturl from URL in browser (denoted by the :)
+    let longURL = req.body.newURL //grabs the long url from the input field in urls show ejs
+    urlDatabase[shortURL] = longURL
+    console.log(urlDatabase)
+res.redirect("/urls/") 
 });
 
 app.listen(PORT, () => {
