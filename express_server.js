@@ -97,6 +97,16 @@ app.post("/logout", (req, res) => {
   res.clearCookie('username'); 
   res.redirect("/urls");         // Respond with 'Ok' (we will replace this)
 });
+
+app.post("/register", (req, res) => {
+  let newId = generateRandomString();
+  let newEmail = req.body.email;
+  let newPassword = req.body.password;
+  users[newId] = {id : newID,
+                  email : newEmail, 
+                  password : newPassword}
+  console.log(users);
+});
   
 app.post("/urls/:shortURL/delete", (req, res) => {
     delete urlDatabase[req.params.shortURL]
