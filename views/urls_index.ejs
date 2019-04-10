@@ -14,10 +14,22 @@
   <a href = '#'> Create New TinyURL </a>
   <h2> My URLs </h2>
   <div>
-<% for(url in urls) { %>
-   <li> <b> <%= url %> </b> :  <%= urls[url] %> </li>
-<% } %>
-  </div>
+    <ul>
+        <% for(url in urls) { %>
+        <li>
+            <div>
+            <form method="POST" action="/urls/<%= url %>/delete">
+                
+                <b> <%= url %> </b> :  <%= urls[url] %> 
+                <button type="submit" class="btn btn-primary">Delete</button>
+            
+            </form>
+        </div>
+        </li>
+        <% } %>
+    </ul>
+</div>
+</form>
 
 </body>
 </html>

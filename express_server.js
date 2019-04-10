@@ -42,7 +42,7 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
-    const longURL = urlDatabase[req.params.shortURL]
+    const longURL = urlDatabase[req.params.shortURL] //grabs the longURL from database
     res.redirect(longURL);
   });
 
@@ -58,11 +58,14 @@ app.post("/urls", (req, res) => {
     let newId = generateRandomString()
     let longURL = req.body.longURL
     //let templateVars = { newId : longURL};  // Log the POST request body to the console
-    urlDatabase[newId] = longURL
+    urlDatabase[newId] = longURL // adds new entry into the database with key (shortURL) and value (longURL)
     res.redirect("/urls/" + newId);         // Respond with 'Ok' (we will replace this)
 });
 
-
+app.post("/urls/:shortURL/delete", (req, res) => {
+delete urlDatabase[req.params.shortURL]
+res.redirect("/urls")    
+});
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
