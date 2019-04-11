@@ -20,7 +20,7 @@
         <li>
             <form class="form-inline" method="POST" action="/urls/<%= url %>/delete">
               <div class="form-group mb-2">
-                <b> <%= url %> </b> :  <%= urls[url] %> 
+                <b> <%= url %> </b> :  <%= urls[url].longURL %> 
                   <a href = "/urls/<%= url %>" style="margin-left: 1em">   Edit  </a>
                 <button type="submit" class="btn btn-primary" style="margin-left: 0.5em">  Delete  </button>
               </div>

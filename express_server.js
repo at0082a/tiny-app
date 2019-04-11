@@ -9,9 +9,9 @@ const bodyParser = require("body-parser");
 
 app.use(bodyParser.urlencoded({extended: true}));
 
-var urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+const urlDatabase = {
+  b6UTxQ: { longURL: "https://www.tsn.ca", userID: "userRandomID" },
+  i3BoGr: { longURL: "https://www.google.ca", userID: "user2RandomID" }
 };
 
 const users = { 
@@ -23,8 +23,19 @@ const users = {
  "user2RandomID": {
     id: "user2RandomID", 
     email: "user2@example.com", 
-    password: "dishwasher-funk"
+    password: "abc"
   }
+}
+
+function urlsForUser(id) {
+  let results = {};
+  for (url in urlDatabase) {
+  if (id === urlDatabase[url].userID) {
+    results[url] = urlDatabase[url]
+  }
+  }
+  console.log('these are the results', results);
+  return results
 }
 
 function generateRandomString() {
@@ -38,10 +49,12 @@ function generateRandomString() {
   }
   
   function checkLogin(email, password) {
+    console.log('email', email);
+    console.log('pass', password);
     for (user in users) {
       if (users[user].email === email && users[user].password === password) {
         return users[user]
-      }
+      } 
     }
     return null;
   }
@@ -55,13 +68,12 @@ function generateRandomString() {
   }
 
   function currentUser (req) {
-    let user;
     if (req.cookies["user_id"]) {
-      user = getCurrentUser(req.cookies["user_id"])  
+      return getCurrentUser(req.cookies["user_id"])  
     } else {
-      user = null
+      console.log('you are not logged in')
+      return undefined
     }
-    return user
   }
 
 app.get("/", (req, res) => {
@@ -69,33 +81,39 @@ app.get("/", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-    let user = currentUser(req)
+    let user = currentUser(req);
     console.log(user);
-    let templateVars = { urls: urlDatabase,
-                         user: user };
+    let templateVars = { user: null, urls: []  }
+           
+    if (user && user.id) {
+      templateVars = { 
+        urls : urlsForUser(user.id),
+        user : user 
+      };
+    }
     res.render("urls_index", templateVars);
+
 });
 
 app.get("/urls/new", (req, res) => {
-  let user = currentUser(req)
+    let user = currentUser(req)
     let templateVars = { user: user }
     res.render("urls_new", templateVars);
 });
 
 app.get("/register", (req, res) => {
-  let user = currentUser(req)
-  console.log(user);  
-  let templateVars = {user: user
-                      }
+  let user = currentUser(req)  
+  let templateVars = {user: user}
+                      
   res.render("user_registration", templateVars);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
     let user = currentUser(req)
-    let templateVars = { shortURL: req.params.shortURL, 
-                        longURL: urlDatabase[req.params.shortURL],
+    let templateVars = {shortURL: req.params.shortURL, 
+                        longURL: urlDatabase[req.params.shortURL].longURL, 
                         user: user };
-
+      
     res.render("urls_show", templateVars);
 });
 
@@ -112,14 +130,6 @@ app.get("/hello", (req, res) => {
     res.send("<html><body>Hello <b>World</b></body></html>\n");
 }); 
 
-app.post("/urls", (req, res) => {
-    let newId = generateRandomString()
-    let longURL = req.body.longURL //longURL comes from the "name" of the input field in the urls index ejs page
-    
-    urlDatabase[newId] = longURL // adds new entry into the database with key (shortURL) and value (longURL)
-    res.redirect("/urls/" + newId)
-});
-
 app.get("/login", (req, res) => {
   let user = currentUser(req)
   let templateVars = { user: user }
@@ -133,15 +143,28 @@ app.post("/login", (req, res) => {
     if (user) {
       res.cookie('user_id', user.id)
     } else {
-      res.status(404).send('Please enter valid username and password');
+      res.status(403).send('Please enter valid username and password');
+    }           
+    res.redirect("/urls");       
+});
+
+app.post("/urls", (req, res) => {
+  let newId = generateRandomString();
+  let newLongURL = req.body.longURL //longURL comes from the "name" of the input field in the urls index ejs page
+  console.log("Cookies", req.cookies);
+   // adds new entry into the database with key (shortURL) and value (longURL)
+  
+    if (req.cookies.user_id) {
+      urlDatabase[newId] = { longURL : newLongURL, userID : req.cookies['user_id'] }
+    } else {
+      res.status(403).send('Please login to view your URLs');
     }
-              
-    res.redirect("/urls");         // Respond with 'Ok' (we will replace this)
+  res.redirect("/urls/")
 });
 
 app.post("/logout", (req, res) => {  
   res.clearCookie('user_id'); 
-  res.redirect("/urls");         // Respond with 'Ok' (we will replace this)
+  res.redirect("/login");           // Respond with 'Ok' (we will replace this)
 });
 
 app.post("/register", (req, res) => {
@@ -158,7 +181,6 @@ app.post("/register", (req, res) => {
       users[newId] = { id : newId,
         email : newEmail, 
         password : newPassword }
-
     
     res.cookie('user_id', newId)
     res.redirect("/urls")
@@ -173,7 +195,7 @@ res.redirect("/urls")
 app.post("/urls/:shortURL", (req, res) => {
     let shortURL = req.params.shortURL // grabs shorturl from URL in browser (denoted by the :)
     let longURL = req.body.newURL //grabs the long url from the input field in urls show ejs
-    urlDatabase[shortURL] = longURL
+    urlDatabase[shortURL] = {longURL : longURL, userID : req.cookies['user_id']}
 res.redirect("/urls/") 
 });
 
