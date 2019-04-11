@@ -18,7 +18,7 @@ const users = {
   "userRandomID": {
     id: "userRandomID", 
     email: "user@example.com", 
-    password: "purple-monkey-dinosaur"
+    password: "123"
   },
  "user2RandomID": {
     id: "user2RandomID", 
@@ -37,33 +37,65 @@ function generateRandomString() {
     return text;
   }
   
+  function checkLogin(email, password) {
+    for (user in users) {
+      if (users[user].email === email && users[user].password === password) {
+        return users[user]
+      }
+    }
+    return null;
+  }
+
+  function getCurrentUser (id) {
+    for (user in users) {
+      if (users[user].id === id) {
+        return users[user]
+      }
+    }
+  }
+
+  function currentUser (req) {
+    let user;
+    if (req.cookies["user_id"]) {
+      user = getCurrentUser(req.cookies["user_id"])  
+    } else {
+      user = null
+    }
+    return user
+  }
 
 app.get("/", (req, res) => {
     res.send("Hello!");
 });
 
 app.get("/urls", (req, res) => {
+    let user = currentUser(req)
+    console.log(user);
     let templateVars = { urls: urlDatabase,
-                         username: req.cookies["username"] };
+                         user: user };
     res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-    let templateVars = { username: req.cookies["username"] }
+  let user = currentUser(req)
+    let templateVars = { user: user }
     res.render("urls_new", templateVars);
 });
 
 app.get("/register", (req, res) => {
-  let templateVars = { username: req.cookies["username"] }
+  let user = currentUser(req)
+  console.log(user);  
+  let templateVars = {user: user
+                      }
   res.render("user_registration", templateVars);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
+    let user = currentUser(req)
     let templateVars = { shortURL: req.params.shortURL, 
                         longURL: urlDatabase[req.params.shortURL],
-                        username: req.cookies["username"] };
+                        user: user };
 
-        console.log(typeof templateVars.username);
     res.render("urls_show", templateVars);
 });
 
@@ -88,13 +120,27 @@ app.post("/urls", (req, res) => {
     res.redirect("/urls/" + newId)
 });
 
+app.get("/login", (req, res) => {
+  let user = currentUser(req)
+  let templateVars = { user: user }
+  res.render("user_login", templateVars)
+});
+
 app.post("/login", (req, res) => {
-    res.cookie('username', req.body.username); // grabs the username from the input in form of header partial.
+    const email = req.body.email;
+    const password = req.body.password;
+    const user = checkLogin(email, password);
+    if (user) {
+      res.cookie('user_id', user.id)
+    } else {
+      res.status(404).send('Please enter valid username and password');
+    }
+              
     res.redirect("/urls");         // Respond with 'Ok' (we will replace this)
 });
 
 app.post("/logout", (req, res) => {  
-  res.clearCookie('username'); 
+  res.clearCookie('user_id'); 
   res.redirect("/urls");         // Respond with 'Ok' (we will replace this)
 });
 
@@ -102,10 +148,21 @@ app.post("/register", (req, res) => {
   let newId = generateRandomString();
   let newEmail = req.body.email;
   let newPassword = req.body.password;
-  users[newId] = {id : newID,
-                  email : newEmail, 
-                  password : newPassword}
-  console.log(users);
+  
+
+  if (!newEmail || !newPassword) {
+    res.status(404);
+  } else if (checkLogin(newEmail, newPassword)) {
+    res.status(404).send('You are already registered')
+  } else {
+      users[newId] = { id : newId,
+        email : newEmail, 
+        password : newPassword }
+
+    
+    res.cookie('user_id', newId)
+    res.redirect("/urls")
+  }
 });
   
 app.post("/urls/:shortURL/delete", (req, res) => {
