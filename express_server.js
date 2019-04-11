@@ -6,6 +6,8 @@ var PORT = 8080; // default port 8080
 app.set("view engine", "ejs")
 
 const bodyParser = require("body-parser");
+const bcrypt = require('bcrypt');
+
 
 app.use(bodyParser.urlencoded({extended: true}));
 
@@ -139,7 +141,9 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
     const email = req.body.email;
     const password = req.body.password;
-    const user = checkLogin(email, password);
+    const hashedPassword = bcrypt.hashSync(password, 10)
+    const user = checkLogin(email, hashedPassword);
+    
     if (user) {
       res.cookie('user_id', user.id)
     } else {
@@ -171,16 +175,18 @@ app.post("/register", (req, res) => {
   let newId = generateRandomString();
   let newEmail = req.body.email;
   let newPassword = req.body.password;
+  const hashedPassword = bcrypt.hashSync(newPassword, 10);
+  console.log(hashedPassword);
   
 
-  if (!newEmail || !newPassword) {
+  if (!newEmail || !newPassword)   {
     res.status(404);
-  } else if (checkLogin(newEmail, newPassword)) {
+  } else if (checkLogin(newEmail, hashedPassword)) {
     res.status(404).send('You are already registered')
   } else {
       users[newId] = { id : newId,
         email : newEmail, 
-        password : newPassword }
+        password : hashedPassword }
     
     res.cookie('user_id', newId)
     res.redirect("/urls")
