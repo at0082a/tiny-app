@@ -16,17 +16,27 @@ const urlDatabase = {
   i3BoGr: { longURL: "https://www.google.ca", userID: "user2RandomID" }
 };
 
+function generateHashedPassword (value) {
+  const hashedPassword = bcrypt.hashSync(value, 10);
+  return hashedPassword
+}
+
 const users = { 
   "userRandomID": {
     id: "userRandomID", 
     email: "user@example.com", 
-    password: "123"
+    password: generateHashedPassword("123")
   },
  "user2RandomID": {
     id: "user2RandomID", 
     email: "user2@example.com", 
-    password: "abc"
+    password: generateHashedPassword("abc")
   }
+}
+
+function generateHashedPassword (value) {
+  const hashedPassword = bcrypt.hashSync(value, 10);
+  return hashedPassword
 }
 
 function urlsForUser(id) {
@@ -51,11 +61,9 @@ function generateRandomString() {
   }
   
   function checkLogin(email, password) {
-    console.log('email', email);
-    console.log('pass', password);
-    var isCorrectPassword = bcrypt.compareSync(password, users[user].password)
-    
     for (user in users) {
+      var isCorrectPassword = bcrypt.compareSync(password, users[user].password) // returns true
+      console.log(users[user.password]);
       if (users[user].email === email && isCorrectPassword) {
            return users[user]
         }
@@ -63,8 +71,6 @@ function generateRandomString() {
       return null;
     }
  
-
-
   function getCurrentUser (id) {
     for (user in users) {
       if (users[user].id === id) {
@@ -77,7 +83,6 @@ function generateRandomString() {
     if (req.cookies["user_id"]) {
       return getCurrentUser(req.cookies["user_id"])  
     } else {
-      console.log('you are not logged in')
       return undefined
     }
   }
@@ -124,7 +129,7 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
-    const longURL = urlDatabase[req.params.shortURL] //grabs the longURL from database. "shortURL" in params comes from the "shortURL" in the browser link.
+    const longURL = urlDatabase[req.params.shortURL].longURL //grabs the longURL from database. "shortURL" in params comes from the "shortURL" in the browser link.
     res.redirect(longURL);
   });
 
@@ -145,7 +150,7 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
     const email = req.body.email;
     const password = req.body.password;
-    const user = checkLogin(email, password);
+    const user = checkLogin(email, password); //returns the user object for the specified login credentials.
 
     if (user) {
       res.cookie('user_id', user.id)
@@ -178,8 +183,6 @@ app.post("/register", (req, res) => {
   let newId = generateRandomString();
   let newEmail = req.body.email;
   let newPassword = req.body.password;
-  
-  
 
   if (!newEmail || !newPassword)   {
     res.status(404);
