@@ -53,13 +53,17 @@ function generateRandomString() {
   function checkLogin(email, password) {
     console.log('email', email);
     console.log('pass', password);
+    var isCorrectPassword = bcrypt.compareSync(password, users[user].password)
+    
     for (user in users) {
-      if (users[user].email === email && users[user].password === password) {
-        return users[user]
+      if (users[user].email === email && isCorrectPassword) {
+           return users[user]
+        }
       } 
+      return null;
     }
-    return null;
-  }
+ 
+
 
   function getCurrentUser (id) {
     for (user in users) {
@@ -141,9 +145,8 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
     const email = req.body.email;
     const password = req.body.password;
-    const hashedPassword = bcrypt.hashSync(password, 10)
-    const user = checkLogin(email, hashedPassword);
-    
+    const user = checkLogin(email, password);
+
     if (user) {
       res.cookie('user_id', user.id)
     } else {
@@ -175,15 +178,15 @@ app.post("/register", (req, res) => {
   let newId = generateRandomString();
   let newEmail = req.body.email;
   let newPassword = req.body.password;
-  const hashedPassword = bcrypt.hashSync(newPassword, 10);
-  console.log(hashedPassword);
+  
   
 
   if (!newEmail || !newPassword)   {
     res.status(404);
-  } else if (checkLogin(newEmail, hashedPassword)) {
+  } else if (checkLogin(newEmail, newPassword)) {
     res.status(404).send('You are already registered')
   } else {
+    const hashedPassword = bcrypt.hashSync(newPassword, 10);
       users[newId] = { id : newId,
         email : newEmail, 
         password : hashedPassword }
