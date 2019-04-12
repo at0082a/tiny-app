@@ -138,8 +138,6 @@ app.get("/urls/:shortURL", (req, res) => {
 app.get("/u/:shortURL", (req, res) => {
     const longURL = urlDatabase[req.params.shortURL] //grabs the longURL from database. "shortURL" in params comes from the "shortURL" in the browser link.
     
-    console.log(longURL)
-    
     if (longURL === undefined) {
       res.status(404).send('Invalid shortURL')
     } else {
