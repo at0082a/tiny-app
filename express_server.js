@@ -1,15 +1,20 @@
 var express = require("express");
 var cookieParser = require('cookie-parser')
 var app = express();
+var bodyParser = require('body-parser');
 app.use(cookieParser())
 var PORT = 8080; // default port 8080
 app.set("view engine", "ejs")
-
-const bodyParser = require("body-parser");
+app.use(bodyParser.urlencoded({ extended: false }))
+var cookieSession = require('cookie-session')
 const bcrypt = require('bcrypt');
 
 
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(cookieSession({
+  name: 'session',
+  keys: ['key1', 'key2'],
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}))
 
 const urlDatabase = {
   b6UTxQ: { longURL: "https://www.tsn.ca", userID: "userRandomID" },
@@ -46,7 +51,6 @@ function urlsForUser(id) {
     results[url] = urlDatabase[url]
   }
   }
-  console.log('these are the results', results);
   return results
 }
 
@@ -63,7 +67,6 @@ function generateRandomString() {
   function checkLogin(email, password) {
     for (user in users) {
       var isCorrectPassword = bcrypt.compareSync(password, users[user].password) // returns true
-      console.log(users[user.password]);
       if (users[user].email === email && isCorrectPassword) {
            return users[user]
         }
@@ -80,27 +83,26 @@ function generateRandomString() {
   }
 
   function currentUser (req) {
-    if (req.cookies["user_id"]) {
-      return getCurrentUser(req.cookies["user_id"])  
+    if (req.session.user_id) {
+      return getCurrentUser(req.session.user_id)  
     } else {
       return undefined
     }
   }
 
 app.get("/", (req, res) => {
-    res.send("Hello!");
+    res.redirect("/urls");
 });
 
 app.get("/urls", (req, res) => {
     let user = currentUser(req);
-    console.log(user);
     let templateVars = { user: null, urls: []  }
            
     if (user && user.id) {
       templateVars = { 
         urls : urlsForUser(user.id),
         user : user 
-      };
+      } 
     }
     res.render("urls_index", templateVars);
 
@@ -124,13 +126,26 @@ app.get("/urls/:shortURL", (req, res) => {
     let templateVars = {shortURL: req.params.shortURL, 
                         longURL: urlDatabase[req.params.shortURL].longURL, 
                         user: user };
-      
+    if (!user) {
+      res.status(403).send
+    } 
+    if (!urlDatabase[req.params.shortURL]) {
+      res.status(403).send
+    }
     res.render("urls_show", templateVars);
 });
 
 app.get("/u/:shortURL", (req, res) => {
-    const longURL = urlDatabase[req.params.shortURL].longURL //grabs the longURL from database. "shortURL" in params comes from the "shortURL" in the browser link.
-    res.redirect(longURL);
+    const longURL = urlDatabase[req.params.shortURL] //grabs the longURL from database. "shortURL" in params comes from the "shortURL" in the browser link.
+    
+    console.log(longURL)
+    
+    if (longURL === undefined) {
+      res.status(404).send('Invalid shortURL')
+    } else {
+      res.redirect(longURL.longURL);
+    }
+    
   });
 
 app.get("/urls.json", (req, res) => {
@@ -153,7 +168,8 @@ app.post("/login", (req, res) => {
     const user = checkLogin(email, password); //returns the user object for the specified login credentials.
 
     if (user) {
-      res.cookie('user_id', user.id)
+      req.session.user_id = user.id
+      // res.cookie('user_id', user.id)
     } else {
       res.status(403).send('Please enter valid username and password');
     }           
@@ -163,19 +179,18 @@ app.post("/login", (req, res) => {
 app.post("/urls", (req, res) => {
   let newId = generateRandomString();
   let newLongURL = req.body.longURL //longURL comes from the "name" of the input field in the urls index ejs page
-  console.log("Cookies", req.cookies);
    // adds new entry into the database with key (shortURL) and value (longURL)
   
-    if (req.cookies.user_id) {
-      urlDatabase[newId] = { longURL : newLongURL, userID : req.cookies['user_id'] }
+    if (req.session.user_id) {
+      urlDatabase[newId] = { longURL : newLongURL, userID : req.session.user_id }
     } else {
-      res.status(403).send('Please login to view your URLs');
+      res.status(403).send('Please login to create a URL');
     }
   res.redirect("/urls/")
 });
 
 app.post("/logout", (req, res) => {  
-  res.clearCookie('user_id'); 
+  req.session = null;
   res.redirect("/login");           // Respond with 'Ok' (we will replace this)
 });
 
@@ -185,7 +200,7 @@ app.post("/register", (req, res) => {
   let newPassword = req.body.password;
 
   if (!newEmail || !newPassword)   {
-    res.status(404);
+    res.status(404).send('Please enter valid registration credentials');
   } else if (checkLogin(newEmail, newPassword)) {
     res.status(404).send('You are already registered')
   } else {
@@ -194,7 +209,8 @@ app.post("/register", (req, res) => {
         email : newEmail, 
         password : hashedPassword }
     
-    res.cookie('user_id', newId)
+    req.session.user_id = newId
+    // req.session('user_id', newId)
     res.redirect("/urls")
   }
 });
@@ -207,7 +223,7 @@ res.redirect("/urls")
 app.post("/urls/:shortURL", (req, res) => {
     let shortURL = req.params.shortURL // grabs shorturl from URL in browser (denoted by the :)
     let longURL = req.body.newURL //grabs the long url from the input field in urls show ejs
-    urlDatabase[shortURL] = {longURL : longURL, userID : req.cookies['user_id']}
+    urlDatabase[shortURL] = { longURL : longURL, userID : req.session.user_id }
 res.redirect("/urls/") 
 });
 
