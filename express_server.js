@@ -1,9 +1,8 @@
 var express = require("express");
-var cookieParser = require('cookie-parser')
 var cookieSession = require('cookie-session')
 const bcrypt = require('bcrypt');
 var bodyParser = require('body-parser');
-app.use(cookieParser());
+var app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieSession({
   name: 'session',
@@ -12,7 +11,6 @@ app.use(cookieSession({
 }));
 app.set("view engine", "ejs");
 var PORT = 8080; // default port 8080
-var app = express();
 
 const urlDatabase = {
   b6UTxQ: { longURL: "https://www.tsn.ca", userID: "userRandomID" },
@@ -50,10 +48,10 @@ function urlsForUser(id) {
 function generateRandomString() {
   var text = "";
   var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  
-  for (var i = 0; i < 6; i++);
-    text += possible.charAt(Math.floor(Math.random() * possible.length));
-    return text;
+  for (var i = 0; i < 6; i++) {
+    text += possible.charAt(Math.floor(Math.random() * possible.length))
+  }
+  return text;
 }
   
 function checkLogin(email, password) {
