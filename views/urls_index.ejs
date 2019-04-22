@@ -11,8 +11,7 @@
 <body style="font-size:20px; padding:50px;">
 
   <% include ./partials/_header %>
-  
-  <a href = "/urls/new"> Create New TinyURL </a>
+
   <h2> My URLs </h2>
   <div>
     <ul>
@@ -20,7 +19,7 @@
         <li>
             <form class="form-inline" method="POST" action="/urls/<%= url %>/delete">
               <div class="form-group mb-2">
-                <b> <%= url %> </b> :  <%= urls[url].longURL %> 
+                <b> <a href="/u/<%= url %>"> <%= url %> </a> </b> :  <%= urls[url].longURL %> 
                   <a href = "/urls/<%= url %>" style="margin-left: 1em">   Edit  </a>
                 <button type="submit" class="btn btn-primary" style="margin-left: 0.5em">  Delete  </button>
               </div>

@@ -4,6 +4,7 @@
     <form method="POST" action="/logout">
         <button type="submit" class="btn btn-primary"> Sign Out </button>
         <p> You are signed in as <%= user.email %> </p>
+        <a href = "/urls/new"> Create New TinyURL </a>
     </form>
     <% } else { %>    
     <div>
