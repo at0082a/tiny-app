@@ -81,27 +81,26 @@ function currentUser (req) {
 }
 
 app.get("/", (req, res) => {
-    res.redirect("/urls");
+  res.redirect("/urls");
 });
 
 app.get("/urls", (req, res) => { //to retrieve and render data on home page
-    let user = currentUser(req);
-    let templateVars = { user: null, urls: []  };
+  let user = currentUser(req);
+  let templateVars = { user: null, urls: []  };
            
-    if (user && user.id) {
-      templateVars = { 
-        urls : urlsForUser(user.id),
-        user : user 
-      } 
-    }
-    res.render("urls_index", templateVars);
-
+  if (user && user.id) {
+    templateVars = { 
+      urls : urlsForUser(user.id),
+      user : user 
+    } 
+  }
+  res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-    let user = currentUser(req);
-    let templateVars = { user: user };
-    res.render("urls_new", templateVars);
+  let user = currentUser(req);
+  let templateVars = { user: user };
+  res.render("urls_new", templateVars);
 });
 
 app.get("/register", (req, res) => {
@@ -123,22 +122,21 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
-    const longURL = urlDatabase[req.params.shortURL]; //grabs the longURL from database. "shortURL" in params comes from the "shortURL" in the browser link.
+  const longURL = urlDatabase[req.params.shortURL]; //grabs the longURL from database. "shortURL" in params comes from the "shortURL" in the browser link.
     
-    if (longURL === undefined) {
-      res.status(404).send('Invalid shortURL');
-    } else {
-      res.redirect(longURL.longURL);
-    }
-    
+  if (longURL === undefined) {
+    res.status(404).send('Invalid shortURL');
+  } else {
+    res.redirect(longURL.longURL);
+  }  
   });
 
 app.get("/urls.json", (req, res) => {
-    res.json(urlDatabase);
+  res.json(urlDatabase);
   });
   
 app.get("/hello", (req, res) => {
-    res.send("<html><body>Hello <b>World</b></body></html>\n");
+  res.send("<html><body>Hello <b>World</b></body></html>\n");
 }); 
 
 app.get("/login", (req, res) => {
@@ -148,12 +146,12 @@ app.get("/login", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-    const email = req.body.email;
-    const password = req.body.password;
-    const user = checkLogin(email, password); //returns the user object for the specified login credentials.
+  const email = req.body.email;
+  const password = req.body.password;
+  const user = checkLogin(email, password); //returns the user object for the specified login credentials.
 
-    if (user) {
-      req.session.user_id = user.id;
+  if (user) {
+    req.session.user_id = user.id;
       // res.cookie('user_id', user.id)
     } else {
       res.status(403).send('Please enter valid username and password');
