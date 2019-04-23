@@ -13,15 +13,17 @@
 <body style="font-size:20px; padding:50px;">
     <% include ./partials/_header %>
 
-    <a href = "/urls/new"> Create new URL </a>
+    <% if (user != null) { %>
     
     <h4> <b> TinyURL for </b> <%= longURL %> : </h4>
-
     <form class="form-inline" action="/urls/<%= shortURL %>" method="POST">
             <h5> ShortURL : <%= shortURL %>  </h5>
             <input class="form-control" type="text" name="newURL" placeholder="Type In Long URL" style="width: 300px; margin: 1em">
             <button type="submit" class="btn btn-primary">Update</button>
     </form>
+
+    <% } %>
+
 </body>
 
 </html>
