@@ -112,11 +112,12 @@ app.get("/register", (req, res) => {
 
 app.get("/urls/:shortURL", (req, res) => {
     let user = currentUser(req);
+    console.log(user);
     let templateVars = {shortURL: req.params.shortURL, 
                         longURL: urlDatabase[req.params.shortURL].longURL, 
                         user: user };
-    if (!user || !urlDatabase[req.params.shortURL]) {
-      res.status(403).send;
+    if (user === undefined || !urlDatabase[req.params.shortURL]) {
+      res.status(404).send('Please login or register');
     }
     res.render("urls_show", templateVars);
 });
