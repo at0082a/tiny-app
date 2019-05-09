@@ -121,10 +121,12 @@ app.get("/urls/:shortURL", (req, res) => {
                         user: user };
     if (user === undefined || !urlDatabase[req.params.shortURL]) {
       res.status(404).send('Please login or register');
-    } else if (user !== newUser) {
+    } else if (user.id !== newUser) {
       res.status(404).send('Please login to edit your own URLs');
+    } else {
+      res.render("urls_show", templateVars);
     }
-    res.render("urls_show", templateVars);
+    
 });
 
 app.get("/u/:shortURL", (req, res) => {
