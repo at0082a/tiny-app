@@ -112,12 +112,17 @@ app.get("/register", (req, res) => {
 
 app.get("/urls/:shortURL", (req, res) => {
     let user = currentUser(req);
+    let newUser = urlDatabase[req.params.shortURL].userID
+
     console.log(user);
+    console.log(newUser)
     let templateVars = {shortURL: req.params.shortURL, 
                         longURL: urlDatabase[req.params.shortURL].longURL, 
                         user: user };
     if (user === undefined || !urlDatabase[req.params.shortURL]) {
       res.status(404).send('Please login or register');
+    } else if (user !== newUser) {
+      res.status(404).send('Please login to edit your own URLs');
     }
     res.render("urls_show", templateVars);
 });
