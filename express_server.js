@@ -40,9 +40,9 @@ function urlsForUser(id) {
   for (url in urlDatabase) {
   if (id === urlDatabase[url].userID) {
     results[url] = urlDatabase[url];
+   }
   }
-  }
-  return results;
+ return results;
 }
 
 function generateRandomString() {
@@ -58,7 +58,7 @@ function checkLogin(email, password) {
   for (user in users) {
   var isCorrectPassword = bcrypt.compareSync(password, users[user].password); // returns true
     if (users[user].email === email && isCorrectPassword) {
-        return users[user];
+       return users[user];
       }
     }   
   return null;
@@ -67,7 +67,7 @@ function checkLogin(email, password) {
 function getCurrentUser (id) {
   for (user in users) {
     if (users[user].id === id) {
-    return users[user];
+     return users[user];
     }
   }
 }
@@ -113,9 +113,6 @@ app.get("/register", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
     let user = currentUser(req);
     let newUser = urlDatabase[req.params.shortURL].userID
-
-    console.log(user);
-    console.log(newUser)
     let templateVars = {shortURL: req.params.shortURL, 
                         longURL: urlDatabase[req.params.shortURL].longURL, 
                         user: user };
@@ -125,8 +122,7 @@ app.get("/urls/:shortURL", (req, res) => {
       res.status(404).send('Please login to edit your own URLs');
     } else {
       res.render("urls_show", templateVars);
-    }
-    
+    }   
 });
 
 app.get("/u/:shortURL", (req, res) => {
@@ -214,7 +210,7 @@ app.post("/urls/:shortURL", (req, res) => {
   let shortURL = req.params.shortURL; // grabs shorturl from URL in browser (denoted by the :)
   let longURL = req.body.newURL; //grabs the long url from the input field in urls show ejs
   urlDatabase[shortURL] = { longURL : longURL, userID : req.session.user_id };
-res.redirect("/urls/") 
+  res.redirect("/urls/") 
 });
 
 app.listen(PORT, () => {
